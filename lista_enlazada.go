@@ -28,7 +28,7 @@ func crearNodo[T any](dato T) *nodoLista[T] {
 	return nodo
 }
 
-//Crear funcion para crear iterador
+// Crear funcion del iterador
 
 func (lista *listaEnlazada[T]) EstaVacia() bool {
 	return lista.primero == nil && lista.ultimo == nil
@@ -87,11 +87,22 @@ func (lista *listaEnlazada[T]) Largo() int {
 	return lista.largo
 }
 
-// DISCUTIR
 func (lista *listaEnlazada[T]) Iterar(visitar func(T) bool) {
+	visito := lista.primero
+	for visito == nil && visitar(visito.dato) {
+		visito = visito.siguiente
+	}
+}
+
+func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] { //Se supone que crea un iterador de las lista pero interfaz con la lista
 
 }
 
-func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] { //Se supone que crea un iterador de las lista pero interfaz
-
-}
+//Poner todas las primitivas del iterador
+/*
+func (iterador *iterListaEnlazada)VerActual() T{} y asi
+HaySiguiente() bool
+Siguiente()
+Insertar(T)
+Borrar() T
+*/
