@@ -1,6 +1,7 @@
 package lista
 
 const PANICO = "La lista esta vacia"
+const PANICOITER = "El iterador termino de iterar"
 
 type listaEnlazada[T any] struct {
 	primero *nodoLista[T]
@@ -95,7 +96,7 @@ func (lista *listaEnlazada[T]) Iterar(visitar func(T) bool) {
 	}
 }
 
-func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] { //Se supone que crea un iterador de las lista pero interfaz con la lista
+func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] {
 	iterador := new(iterListaEnlazada[T])
 	iterador.anterior = nil
 	iterador.actual = lista.primero
@@ -104,20 +105,28 @@ func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] { //Se supone que cre
 }
 
 func (iterador *iterListaEnlazada[T]) VerActual() T {
+	if iterador.actual == nil {
+		panic(PANICOITER)
+	}
 	return iterador.actual.dato
 }
 
 func (iterador *iterListaEnlazada[T]) HaySiguiente() bool {
-	return iterador.actual == nil
+	return iterador.actual != nil
 }
+
 func (iterador *iterListaEnlazada[T]) Siguiente() {
+	if iterador.actual == nil {
+		panic(PANICOITER)
+	}
 	iterador.anterior = iterador.actual
 	iterador.actual = iterador.actual.siguiente
 }
+
 func (iterador *iterListaEnlazada[T]) Insertar(dato T) {
 	nodo := crearNodo(dato)
 	if iterador.anterior == nil {
-		if iterador.lista.EstaVacia() {
+		if iterador.lista.EstaVacia() { //Seria la misma condicion que poner iterador.actual==nil
 			iterador.lista.ultimo = nodo
 		}
 		iterador.lista.primero = nodo
@@ -129,10 +138,12 @@ func (iterador *iterListaEnlazada[T]) Insertar(dato T) {
 	iterador.lista.largo++
 
 }
+
 func (iterador *iterListaEnlazada[T]) Borrar() T {
-	if iterador.lista.EstaVacia() {
-		panic(PANICO)
+	if iterador.actual == nil {
+		panic(PANICOITER)
 	}
+
 	elem := iterador.actual.dato
 	if iterador.anterior == nil {
 		if iterador.lista.ultimo == iterador.actual {
