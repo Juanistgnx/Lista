@@ -29,6 +29,7 @@ func TestListaUnElemento(t *testing.T) {
 
 	lista := TDAlista.CrearListaEnlazada[int]()
 	lista.InsertarPrimero(5)
+	//checkear que estr vacia de false
 	require.EqualValues(t, 5, lista.VerPrimero())
 	require.EqualValues(t, 5, lista.VerUltimo())
 	require.EqualValues(t, 1, lista.Largo())
@@ -36,6 +37,7 @@ func TestListaUnElemento(t *testing.T) {
 	require.True(t, true, lista.EstaVacia())
 
 	lista.InsertarUltimo(10)
+	//simil al anterior,chekear que estevacia sea false
 	require.EqualValues(t, 10, lista.VerPrimero())
 	require.EqualValues(t, 10, lista.VerUltimo())
 	require.EqualValues(t, 1, lista.Largo())
@@ -44,13 +46,13 @@ func TestListaUnElemento(t *testing.T) {
 
 func TestComportamientoLista(t *testing.T) {
 	lista := TDAlista.CrearListaEnlazada[int]()
-	lista.InsertarPrimero(5)
+	lista.InsertarPrimero(5) //Chekear que el primero se vaya actualizando(usando VerPrimero)
 	lista.InsertarPrimero(10)
-	lista.InsertarUltimo(8)
+	lista.InsertarUltimo(8) //Lo mismo para el ultimo
 	lista.InsertarUltimo(7)
 
 	require.EqualValues(t, 4, lista.Largo())
-	require.EqualValues(t, 10, lista.BorrarPrimero())
+	require.EqualValues(t, 10, lista.BorrarPrimero()) //Cuando borramos ir chekeando que el primero se va actualizando bn y que el ulltimo tmbn se indique bn
 	require.EqualValues(t, 5, lista.BorrarPrimero())
 	require.EqualValues(t, 8, lista.BorrarPrimero())
 	require.EqualValues(t, 7, lista.BorrarPrimero())
@@ -62,11 +64,16 @@ func TestInt(t *testing.T) {
 	lista_int := TDAlista.CrearListaEnlazada[int]()
 	for _, value := range enteros {
 		lista_int.InsertarUltimo(int(value))
+		//Chekear el primero y el ultimo en la iteracion
 	}
 	largo := len(enteros)
 	for i := 0; i < largo; i++ {
 		require.EqualValues(t, enteros[i], lista_int.BorrarPrimero())
+		//Lo mismo que antes,chekear el ultimo y el primero
 	}
+	//Capaz parecen la pedo o redundantes,pero pensa que deberian andar si cambiamos la implementaciòn,por ende tenemos qye asegurarnos que anden bn con el tipo
+	//Aparte si fallara podemos ver mejor por que y no debaguear todo
+	//Lo mismo iria para la prueba de strings,floats y en vez de hacer boolenanos agregaria structs,ejemplo la struct de punto que dieron en una clase
 }
 
 func TestStrings(t *testing.T) {
@@ -109,9 +116,15 @@ func TestVolumen(t *testing.T) {
 	lista := TDAlista.CrearListaEnlazada[int]()
 	for i := 0; i < 20000; i++ {
 		lista.InsertarPrimero(i)
+		//Aca mas que nda chekear lo del primero y o del ultimo
+		//tmbn probar con distitas cantidades y mezclar las instertar priemero y ultimo con otro for
+		//Osea,este con primero y otro con ultimo o como prefieras,pero controlar de ver primero y ver ultio ande
+		//Tmbn aprovechar los comentarios de requiere y poner ejeplo
+		//require.Values(t,i,lista.VerPrimero(),"La lista pierde la ref al primero cuando hay %d elementos",i)
 	}
 	for i := 0; i < 20000; i++ {
 		require.EqualValues(t, 19999-i, lista.BorrarPrimero())
+		//Chekear lo del ultimo y el primero
 	}
 	require.True(t, true, lista.EstaVacia())
 }
@@ -125,6 +138,8 @@ func TestBorder(t *testing.T) {
 		lista_prueba.BorrarPrimero()
 	}
 	require.True(t, lista_prueba.EstaVacia())
+	//Banco este caso border, pero capaz pondria esto sin un for (haciendo como mucho 3 elementos) para asi vemos bn cuando fallas si es que lo hace
+	//Comprobando que funcione lo de ver utlimo y ver primero
 	for i := 0; i < 10; i++ {
 		lista_prueba.InsertarPrimero(int(i))
 	}
