@@ -1,5 +1,7 @@
 package lista
 
+const PANICO = "La lista esta vacia"
+
 type listaEnlazada[T any] struct {
 	primero *nodoLista[T]
 	ultimo  *nodoLista[T]
@@ -10,6 +12,7 @@ type nodoLista[T any] struct {
 	siguiente *nodoLista[T]
 }
 type iterListaEnlazada[T any] struct {
+	lista    *listaEnlazada[T]
 	anterior *nodoLista[T]
 	actual   *nodoLista[T]
 }
@@ -27,8 +30,6 @@ func crearNodo[T any](dato T) *nodoLista[T] {
 	nodo.siguiente = nil
 	return nodo
 }
-
-// Crear funcion del iterador
 
 func (lista *listaEnlazada[T]) EstaVacia() bool {
 	return lista.primero == nil && lista.ultimo == nil
@@ -58,7 +59,7 @@ func (lista *listaEnlazada[T]) InsertarUltimo(dato T) {
 
 func (lista *listaEnlazada[T]) BorrarPrimero() T {
 	if lista.EstaVacia() {
-		panic("La lista esta vacia")
+		panic(PANICO)
 	}
 	elem := lista.primero.dato
 	lista.primero = lista.primero.siguiente
@@ -71,14 +72,14 @@ func (lista *listaEnlazada[T]) BorrarPrimero() T {
 
 func (lista *listaEnlazada[T]) VerPrimero() T {
 	if lista.EstaVacia() {
-		panic("La lista esta vacia")
+		panic(PANICO)
 	}
 	return lista.primero.dato
 }
 
 func (lista *listaEnlazada[T]) VerUltimo() T {
 	if lista.EstaVacia() {
-		panic("La lista esta vacia")
+		panic(PANICO)
 	}
 	return lista.ultimo.dato
 }
@@ -89,20 +90,63 @@ func (lista *listaEnlazada[T]) Largo() int {
 
 func (lista *listaEnlazada[T]) Iterar(visitar func(T) bool) {
 	visito := lista.primero
-	for visito == nil && visitar(visito.dato) {
+	for visito != nil && visitar(visito.dato) {
 		visito = visito.siguiente
 	}
 }
 
 func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] { //Se supone que crea un iterador de las lista pero interfaz con la lista
-
+	iterador := new(iterListaEnlazada[T])
+	iterador.anterior = nil
+	iterador.actual = lista.primero
+	iterador.lista = lista
+	return iterador
 }
 
-//Poner todas las primitivas del iterador
-/*
-func (iterador *iterListaEnlazada)VerActual() T{} y asi
-HaySiguiente() bool
-Siguiente()
-Insertar(T)
-Borrar() T
-*/
+func (iterador *iterListaEnlazada[T]) VerActual() T {
+	return iterador.actual.dato
+}
+
+func (iterador *iterListaEnlazada[T]) HaySiguiente() bool {
+	return iterador.actual == nil
+}
+func (iterador *iterListaEnlazada[T]) Siguiente() {
+	iterador.anterior = iterador.actual
+	iterador.actual = iterador.actual.siguiente
+}
+func (iterador *iterListaEnlazada[T]) Insertar(dato T) {
+	nodo := crearNodo(dato)
+	if iterador.anterior == nil {
+		if iterador.lista.EstaVacia() {
+			iterador.lista.ultimo = nodo
+		}
+		iterador.lista.primero = nodo
+	} else {
+		iterador.anterior.siguiente = nodo
+	}
+	nodo.siguiente = iterador.actual
+	iterador.actual = nodo
+	iterador.lista.largo++
+
+}
+func (iterador *iterListaEnlazada[T]) Borrar() T {
+	if iterador.lista.EstaVacia() {
+		panic(PANICO)
+	}
+	elem := iterador.actual.dato
+	if iterador.anterior == nil {
+		if iterador.lista.ultimo == iterador.actual {
+			iterador.lista.ultimo = nil
+		}
+		iterador.lista.primero = iterador.actual.siguiente
+	} else {
+		if iterador.lista.ultimo == iterador.actual {
+			iterador.lista.ultimo = iterador.anterior
+		}
+		iterador.anterior.siguiente = iterador.actual.siguiente
+	}
+	iterador.actual = iterador.actual.siguiente
+	iterador.lista.largo--
+	return elem
+
+}
