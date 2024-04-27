@@ -34,7 +34,7 @@ func TestListaUnElemento(t *testing.T) {
 	require.EqualValues(t, 5, lista.VerUltimo())
 	require.EqualValues(t, 1, lista.Largo())
 	require.EqualValues(t, 5, lista.BorrarPrimero())
-	require.True(t, true, lista.EstaVacia())
+	require.True(t, lista.EstaVacia())
 
 	lista.InsertarUltimo(10)
 	//simil al anterior,chekear que estevacia sea false
@@ -56,7 +56,7 @@ func TestComportamientoLista(t *testing.T) {
 	require.EqualValues(t, 5, lista.BorrarPrimero())
 	require.EqualValues(t, 8, lista.BorrarPrimero())
 	require.EqualValues(t, 7, lista.BorrarPrimero())
-	require.True(t, true, lista.EstaVacia())
+	require.True(t, lista.EstaVacia())
 }
 
 func TestInt(t *testing.T) {
@@ -126,7 +126,7 @@ func TestVolumen(t *testing.T) {
 		require.EqualValues(t, 19999-i, lista.BorrarPrimero())
 		//Chekear lo del ultimo y el primero
 	}
-	require.True(t, true, lista.EstaVacia())
+	require.True(t, lista.EstaVacia())
 }
 
 func TestBorder(t *testing.T) {
