@@ -130,3 +130,94 @@ func TestBorder(t *testing.T) {
 	}
 	require.EqualValues(t, 9, lista_prueba.VerPrimero())
 }
+
+//PRUEBAS ITERADOR
+
+func TestIteradorInicio(t *testing.T) {
+	lista := TDAlista.CrearListaEnlazada[int]()
+	for i := 0; i < 11; i++ {
+		lista.InsertarPrimero(i)
+	}
+	iterador := lista.Iterador()
+	require.EqualValues(t, 10, iterador.VerActual())
+}
+
+func TestInsertarFinal(t *testing.T) {
+	lista := TDAlista.CrearListaEnlazada[int]()
+	for i := 0; i < 11; i++ {
+		lista.InsertarPrimero(i)
+	}
+	iterador0 := lista.Iterador()
+	for iterador0.HaySiguiente() {
+		iterador0.Siguiente()
+	}
+	iterador0.Insertar(-1)
+	require.EqualValues(t, -1, lista.VerUltimo())
+	require.EqualValues(t, 12, lista.Largo())
+}
+
+func TestInsertarMedio(t *testing.T) {
+	lista := TDAlista.CrearListaEnlazada[int]()
+	for i := 0; i < 11; i++ {
+		lista.InsertarUltimo(i)
+	}
+	iterador0 := lista.Iterador()
+	for i := 0; i < 4; i++ {
+		iterador0.Siguiente()
+	}
+	iterador0.Insertar(27)
+	iterador1 := lista.Iterador()
+	for i := 0; i < 4; i++ {
+		iterador1.Siguiente()
+	}
+	require.EqualValues(t, 27, iterador1.VerActual())
+	iterador1.Siguiente()
+	require.EqualValues(t, 4, iterador1.VerActual())
+	require.EqualValues(t, 12, lista.Largo())
+}
+
+func TestEliminarPrimero(t *testing.T) {
+	lista := TDAlista.CrearListaEnlazada[int]()
+	for i := 0; i < 10; i++ {
+		lista.InsertarUltimo(i)
+	}
+	iterador := lista.Iterador()
+	require.EqualValues(t, 0, iterador.Borrar())
+	require.EqualValues(t, 1, lista.VerPrimero())
+	require.EqualValues(t, 9, lista.Largo())
+}
+
+func TestEliminarUltimo(t *testing.T) {
+	lista := TDAlista.CrearListaEnlazada[int]()
+	for i := 0; i < 10; i++ {
+		lista.InsertarUltimo(i)
+	}
+	iterador := lista.Iterador()
+	iterador.Siguiente()
+	iterador1 := lista.Iterador()
+	for iterador.HaySiguiente() {
+		iterador.Siguiente()
+		iterador1.Siguiente()
+	}
+	require.EqualValues(t, 9, iterador1.Borrar())
+	require.EqualValues(t, 8, lista.VerUltimo())
+	require.EqualValues(t, 9, lista.Largo())
+}
+
+func TestEliminarElemento(t *testing.T) {
+	lista := TDAlista.CrearListaEnlazada[int]()
+	for i := 0; i < 10; i++ {
+		lista.InsertarUltimo(i)
+	}
+	iterador := lista.Iterador()
+	for i := 1; i < 8; i++ {
+		iterador.Siguiente()
+	}
+	dato := iterador.Borrar()
+	presencia := false
+	lista.Iterar(func(x int) bool {
+		presencia = (x == dato)
+		return !presencia
+	})
+	require.False(t, presencia)
+}
