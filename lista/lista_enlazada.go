@@ -128,17 +128,6 @@ func (iterador *iterListaEnlazada[T]) Siguiente() {
 }
 
 func (iterador *iterListaEnlazada[T]) Insertar(dato T) {
-
-	/*nodo := crearNodo(dato)
-	if iterador.anterior == nil {
-		if iterador.lista.EstaVacia() { //Seria la misma condicion que poner iterador.actual==nil
-			iterador.lista.ultimo = nodo
-		}
-		iterador.lista.primero = nodo
-	} else {
-		iterador.anterior.siguiente = nodo
-	}*/
-
 	nodo := crearNodo(dato)
 	if iterador.actual == nil {
 		iterador.lista.ultimo = nodo
@@ -160,15 +149,12 @@ func (iterador *iterListaEnlazada[T]) Borrar() T {
 		panic(PANICOITER)
 	}
 	elem := iterador.actual.dato
+	if iterador.lista.ultimo == iterador.actual {
+		iterador.lista.ultimo = iterador.anterior
+	}
 	if iterador.anterior == nil {
-		if iterador.lista.ultimo == iterador.actual {
-			iterador.lista.ultimo = nil
-		}
 		iterador.lista.primero = iterador.actual.siguiente
 	} else {
-		if iterador.lista.ultimo == iterador.actual {
-			iterador.lista.ultimo = iterador.anterior
-		}
 		iterador.anterior.siguiente = iterador.actual.siguiente
 	}
 	iterador.actual = iterador.actual.siguiente
