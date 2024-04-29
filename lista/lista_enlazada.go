@@ -109,7 +109,7 @@ func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] {
 }
 
 func (iterador *iterListaEnlazada[T]) VerActual() T {
-	if iterador.actual == nil {
+	if !iterador.HaySiguiente() {
 		panic(PANICOITER)
 	}
 	return iterador.actual.dato
@@ -120,7 +120,7 @@ func (iterador *iterListaEnlazada[T]) HaySiguiente() bool {
 }
 
 func (iterador *iterListaEnlazada[T]) Siguiente() {
-	if iterador.actual == nil {
+	if !iterador.HaySiguiente() {
 		panic(PANICOITER)
 	}
 	iterador.anterior = iterador.actual
@@ -129,7 +129,7 @@ func (iterador *iterListaEnlazada[T]) Siguiente() {
 
 func (iterador *iterListaEnlazada[T]) Insertar(dato T) {
 	nodo := crearNodo(dato)
-	if iterador.actual == nil {
+	if !iterador.HaySiguiente() {
 		iterador.lista.ultimo = nodo
 	}
 	if iterador.anterior == nil {
@@ -145,7 +145,7 @@ func (iterador *iterListaEnlazada[T]) Insertar(dato T) {
 }
 
 func (iterador *iterListaEnlazada[T]) Borrar() T {
-	if iterador.actual == nil {
+	if !iterador.HaySiguiente() {
 		panic(PANICOITER)
 	}
 	elem := iterador.actual.dato
