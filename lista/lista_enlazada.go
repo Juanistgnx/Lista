@@ -1,7 +1,5 @@
 package lista
 
-//prueba
-
 const PANICO = "La lista esta vacia"
 const PANICOITER = "El iterador termino de iterar"
 
