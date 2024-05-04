@@ -1,6 +1,8 @@
 package diccionario
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type estadoNodo int
 
@@ -41,25 +43,83 @@ func CrearHash[K comparable, V any]() Diccionario[K, V] {
 
 // Primitivas del Hash
 func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
-
+	busqueda := buscar(hash, clave)
+	if busqueda != nil {
+		busqueda.dato = dato
+		return
+	}
+	indice0 := indiceHash(clave, hash.tamaño)
+	for i := 0; i < hash.tamaño; i++ {
+		indice := (indice0 + i) % (hash.tamaño)
+		if hash.contenido[indice].estado == VACIO {
+			hash.contenido[indice].clave = clave
+			hash.contenido[indice].dato = dato
+			hash.contenido[indice].estado = OCUPADO
+			break
+		}
+	}
+	hash.ocupados++
 }
+
 func (hash *hashCerrado[K, V]) Pertenece(clave K) bool {
-
+	nodo := buscar(hash, clave)
+	return (nodo != nil)
 }
+
 func (hash *hashCerrado[K, V]) Obtener(clave K) V {
-
+	nodo := buscar(hash, clave)
+	if nodo == nil {
+		panic("La clave no pertenece al diccionario")
+	} else {
+		return nodo.dato
+	}
 }
+
 func (hash *hashCerrado[K, V]) Borrar(clave K) V {
-
+	dato := hash.Obtener(clave) //Obtener hace saltar el panic en caso tal que la clave no haga parte del hash
+	nodo := buscar(hash, clave)
+	nodo.estado = BORRADO
+	hash.borrados++
+	return dato
 }
+
 func (hash *hashCerrado[K, V]) Cantidad() int {
-
+	return (hash.ocupados - hash.borrados)
 }
-func (hash *hashCerrado[K, V]) Iterar(func(clave K, dato V) bool) {
 
+func (hash *hashCerrado[K, V]) Iterar(f func(clave K, dato V) bool) {
+	for _, nodo := range hash.contenido {
+		if nodo.estado == OCUPADO && !f(nodo.clave, nodo.dato) {
+			break
+		}
+	}
 }
+
 func (hash *hashCerrado[K, V]) Iterador() IterDiccionario[K, V] {
+	iterador := new(iterDiccionarioHash[K, V])
+	iterador.hash = hash
+	for i := 0; i < hash.tamaño; i++ {
+		if hash.contenido[i].estado == OCUPADO {
+			iterador.posicion = i
+			break
+		}
+	}
+	return iterador
+}
 
+func buscar[K comparable, V any](hash *hashCerrado[K, V], clave K) *nodoHash[K, V] {
+	indice0 := indiceHash(clave, hash.tamaño)
+	for i := 0; i < hash.tamaño; i++ {
+		indice := (indice0 + i) % (hash.tamaño)
+		if hash.contenido[indice].estado == BORRADO {
+			continue
+		} else if hash.contenido[indice].estado == VACIO {
+			break
+		} else if hash.contenido[indice].clave == clave {
+			return &(hash.contenido[indice])
+		}
+	}
+	return nil
 }
 
 // Primitivas del iterador
