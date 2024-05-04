@@ -60,6 +60,9 @@ func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
 		}
 	}
 	hash.ocupados++
+	if float64(hash.ocupados) >= (float64(0.7) * float64(hash.tamaño)) { //Si el hash está ocupado en un 70%
+		redimensionar(hash, hash.tamaño*2)
+	}
 }
 
 func (hash *hashCerrado[K, V]) Pertenece(clave K) bool {
@@ -84,6 +87,9 @@ func (hash *hashCerrado[K, V]) Borrar(clave K) V {
 	dato := nodo.dato
 	nodo.estado = BORRADO
 	hash.borrados++
+	if float64(hash.Cantidad()) < (float64(hash.tamaño)*float64(0.3)) && hash.tamaño/2 >= LARGOINICIAL {
+		redimensionar(hash, (hash.tamaño)/2)
+	}
 	return dato
 }
 
@@ -151,7 +157,6 @@ func indiceHash[K comparable](clave K, largo_tabla int) int {
 	h.Write(codigo)
 	hash := h.Sum32()
 	return int(hash) % largo_tabla
-
 }
 
 // Recibe una cantidad para redimensionar
@@ -169,10 +174,12 @@ func redimensionar[K comparable, V any](hash *hashCerrado[K, V], cantidad_nueva 
 				}
 			}
 			nuevo_contenido[indice].clave, nuevo_contenido[indice].dato = e.clave, e.dato
+			nuevo_contenido[indice].estado = OCUPADO
 		}
 	}
 	hash.contenido = nuevo_contenido
 	hash.tamaño = cantidad_nueva
+	hash.ocupados -= hash.borrados
 	hash.borrados = 0
 }
 
