@@ -169,6 +169,7 @@ func redimensionar[K comparable, V any](hash *hashCerrado[K, V], cantidad_nueva 
 	hash.borrados = 0
 }
 
+// busca a partir de la clave
 func buscar[K comparable, V any](hash *hashCerrado[K, V], clave K) *nodoHash[K, V] {
 	indice0 := indiceHash(clave, hash.tamaño)
 	for i := 0; i < hash.tamaño; i++ {
