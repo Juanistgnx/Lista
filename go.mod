@@ -1,3 +1,3 @@
-module diccionario
+module tdas
 
 go 1.22.0
