@@ -107,26 +107,12 @@ func (hash *hashCerrado[K, V]) Iterador() IterDiccionario[K, V] {
 	return iterador
 }
 
-func buscar[K comparable, V any](hash *hashCerrado[K, V], clave K) *nodoHash[K, V] {
-	indice0 := indiceHash(clave, hash.tamaño)
-	for i := 0; i < hash.tamaño; i++ {
-		indice := (indice0 + i) % (hash.tamaño)
-		if hash.contenido[indice].estado == BORRADO {
-			continue
-		} else if hash.contenido[indice].estado == VACIO {
-			break
-		} else if hash.contenido[indice].clave == clave {
-			return &(hash.contenido[indice])
-		}
-	}
-	return nil
-}
-
 // Primitivas del iterador
 func (iter *iterDiccionarioHash[K, V]) HaySiguiente() bool {
 	return iter.posicion < iter.hash.tamaño && iter.hash.contenido[iter.posicion].estado == OCUPADO
 
 }
+
 func (iter *iterDiccionarioHash[K, V]) VerActual() (K, V) {
 	if !iter.HaySiguiente() {
 		panic(PANICOITER)
@@ -134,12 +120,18 @@ func (iter *iterDiccionarioHash[K, V]) VerActual() (K, V) {
 	elem := iter.hash.contenido[iter.posicion]
 	return elem.clave, elem.dato
 }
+
 func (iter *iterDiccionarioHash[K, V]) Siguiente() {
 	if !iter.HaySiguiente() {
 		panic(PANICOITER)
 	}
 	tabla := iter.hash.contenido
-	for ; (iter.posicion < iter.hash.tamaño) && (tabla[iter.posicion].estado != OCUPADO); iter.posicion++ {
+	iter.posicion++
+	for iter.posicion < iter.hash.tamaño {
+		if tabla[iter.posicion].estado == OCUPADO {
+			break
+		}
+		iter.posicion++
 	}
 }
 
@@ -175,4 +167,19 @@ func redimensionar[K comparable, V any](hash *hashCerrado[K, V], cantidad_nueva 
 	hash.contenido = nuevo_contenido
 	hash.tamaño = cantidad_nueva
 	hash.borrados = 0
+}
+
+func buscar[K comparable, V any](hash *hashCerrado[K, V], clave K) *nodoHash[K, V] {
+	indice0 := indiceHash(clave, hash.tamaño)
+	for i := 0; i < hash.tamaño; i++ {
+		indice := (indice0 + i) % (hash.tamaño)
+		if hash.contenido[indice].estado == BORRADO {
+			continue
+		} else if hash.contenido[indice].estado == VACIO {
+			break
+		} else if hash.contenido[indice].clave == clave {
+			return &(hash.contenido[indice])
+		}
+	}
+	return nil
 }
