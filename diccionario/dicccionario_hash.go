@@ -2,6 +2,7 @@ package diccionario
 
 import (
 	"fmt"
+	"hash/fnv"
 )
 
 type estadoNodo int
@@ -144,10 +145,13 @@ func convertirABytes[K comparable](clave K) []byte {
 	return []byte(fmt.Sprintf("%v", clave))
 }
 
-func indiceHash[K comparable](clave K, largo_tabla int) int { //usando la funcion hash me da el indice en que inicialmente le corresponde a mi valor
-	convertirABytes(clave)
-	//hacer el hash
-	//hacemos return hash % largo_tabla
+func indiceHash[K comparable](clave K, largo_tabla int) int {
+	codigo := convertirABytes(clave)
+	h := fnv.New32()
+	h.Write(codigo)
+	hash := h.Sum32()
+	return int(hash) % largo_tabla
+
 }
 
 // Recibe una cantidad para redimensionar
