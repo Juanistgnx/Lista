@@ -69,15 +69,18 @@ func (hash *hashCerrado[K, V]) Pertenece(clave K) bool {
 func (hash *hashCerrado[K, V]) Obtener(clave K) V {
 	nodo := buscar(hash, clave)
 	if nodo == nil {
-		panic("La clave no pertenece al diccionario")
+		panic(PANICO)
 	} else {
 		return nodo.dato
 	}
 }
 
 func (hash *hashCerrado[K, V]) Borrar(clave K) V {
-	dato := hash.Obtener(clave) //Obtener hace saltar el panic en caso tal que la clave no haga parte del hash
 	nodo := buscar(hash, clave)
+	if nodo == nil {
+		panic(PANICO)
+	}
+	dato := nodo.dato
 	nodo.estado = BORRADO
 	hash.borrados++
 	return dato
