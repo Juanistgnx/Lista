@@ -5,10 +5,10 @@ import (
 	"hash/fnv"
 )
 
-type estadoNodo int
+type estadoCelda int
 
 const (
-	VACIO = estadoNodo(iota)
+	VACIO = estadoCelda(iota)
 	OCUPADO
 	BORRADO
 )
@@ -16,14 +16,14 @@ const LARGOINICIAL int = 13
 const PANICO = "La clave no pertenece al diccionario"
 const PANICOITER = "El iterador termino de iterar"
 
-type nodoHash[K comparable, V any] struct {
+type celdaHash[K comparable, V any] struct {
 	clave  K
 	dato   V
-	estado estadoNodo
+	estado estadoCelda
 }
 
 type hashCerrado[K comparable, V any] struct {
-	contenido []nodoHash[K, V]
+	contenido []celdaHash[K, V]
 	tamaño    int
 	ocupados  int
 	borrados  int
@@ -36,7 +36,7 @@ type iterDiccionarioHash[K comparable, V any] struct {
 
 func CrearHash[K comparable, V any]() Diccionario[K, V] {
 	nuevo := new(hashCerrado[K, V])
-	nuevo.contenido = make([]nodoHash[K, V], LARGOINICIAL)
+	nuevo.contenido = make([]celdaHash[K, V], LARGOINICIAL)
 	nuevo.tamaño = LARGOINICIAL
 	nuevo.ocupados, nuevo.borrados = 0, 0
 	return nuevo
@@ -154,7 +154,7 @@ func indiceHash[K comparable](clave K, largo_tabla int) int {
 
 // Recibe una cantidad para redimensionar
 func redimensionar[K comparable, V any](hash *hashCerrado[K, V], cantidad_nueva int) {
-	nuevo_contenido := make([]nodoHash[K, V], cantidad_nueva)
+	nuevo_contenido := make([]celdaHash[K, V], cantidad_nueva)
 	for _, e := range hash.contenido {
 		if e.estado == OCUPADO {
 			ind_ini := indiceHash(e.clave, cantidad_nueva)
@@ -177,7 +177,7 @@ func redimensionar[K comparable, V any](hash *hashCerrado[K, V], cantidad_nueva 
 }
 
 // busca a partir de la clave
-func buscar[K comparable, V any](hash *hashCerrado[K, V], clave K) *nodoHash[K, V] {
+func buscar[K comparable, V any](hash *hashCerrado[K, V], clave K) *celdaHash[K, V] {
 	indice0 := indiceHash(clave, hash.tamaño)
 	for i := 0; i < hash.tamaño; i++ {
 		indice := (indice0 + i) % (hash.tamaño)

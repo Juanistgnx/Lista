@@ -1,6 +1,7 @@
 package diccionario
 
 type Diccionario[K comparable, V any] interface {
+
 	//Guardar recibe la clave y su dato correspondiente y los guarda en el diccionario.
 	Guardar(clave K, dato V)
 
@@ -30,6 +31,7 @@ type Diccionario[K comparable, V any] interface {
 	Iterador() IterDiccionario[K, V]
 }
 type IterDiccionario[K comparable, V any] interface {
+
 	//HaySiguiente devuelve false si no quedan elementos a iterar en donde esta iterador.
 	//En caso contrario,devueve true.
 	HaySiguiente() bool
