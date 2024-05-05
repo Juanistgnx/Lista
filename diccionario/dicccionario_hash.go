@@ -45,20 +45,13 @@ func CrearHash[K comparable, V any]() Diccionario[K, V] {
 // Primitivas del Hash
 func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
 	busqueda := buscar(hash, clave)
-	if busqueda != nil {
+	if busqueda != nil && busqueda.estado == OCUPADO {
 		busqueda.dato = dato
 		return
 	}
-	indice0 := indiceHash(clave, hash.tamaño)
-	for i := 0; i < hash.tamaño; i++ {
-		indice := (indice0 + i) % (hash.tamaño)
-		if hash.contenido[indice].estado == VACIO {
-			hash.contenido[indice].clave = clave
-			hash.contenido[indice].dato = dato
-			hash.contenido[indice].estado = OCUPADO
-			break
-		}
-	}
+	busqueda.clave = clave
+	busqueda.dato = dato
+	busqueda.estado = OCUPADO
 	hash.ocupados++
 	if float64(hash.ocupados) >= (float64(0.7) * float64(hash.tamaño)) { //Si el hash está ocupado en un 70%
 		redimensionar(hash, hash.tamaño*2)
@@ -67,12 +60,12 @@ func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
 
 func (hash *hashCerrado[K, V]) Pertenece(clave K) bool {
 	nodo := buscar(hash, clave)
-	return (nodo != nil)
+	return (nodo != nil && nodo.estado == OCUPADO)
 }
 
 func (hash *hashCerrado[K, V]) Obtener(clave K) V {
 	nodo := buscar(hash, clave)
-	if nodo == nil {
+	if nodo == nil || nodo.estado == VACIO {
 		panic(PANICO)
 	} else {
 		return nodo.dato
@@ -81,7 +74,7 @@ func (hash *hashCerrado[K, V]) Obtener(clave K) V {
 
 func (hash *hashCerrado[K, V]) Borrar(clave K) V {
 	nodo := buscar(hash, clave)
-	if nodo == nil {
+	if nodo == nil || nodo.estado == VACIO {
 		panic(PANICO)
 	}
 	dato := nodo.dato
@@ -190,9 +183,7 @@ func buscar[K comparable, V any](hash *hashCerrado[K, V], clave K) *nodoHash[K, 
 		indice := (indice0 + i) % (hash.tamaño)
 		if hash.contenido[indice].estado == BORRADO {
 			continue
-		} else if hash.contenido[indice].estado == VACIO {
-			break
-		} else if hash.contenido[indice].clave == clave {
+		} else if hash.contenido[indice].estado == VACIO || hash.contenido[indice].clave == clave {
 			return &(hash.contenido[indice])
 		}
 	}
