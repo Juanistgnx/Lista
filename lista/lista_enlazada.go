@@ -20,8 +20,6 @@ type iterListaEnlazada[T any] struct {
 
 func CrearListaEnlazada[T any]() Lista[T] {
 	lista := new(listaEnlazada[T])
-	lista.primero, lista.ultimo = nil, nil
-	lista.largo = 0
 	return lista
 }
 
@@ -40,9 +38,8 @@ func (lista *listaEnlazada[T]) InsertarPrimero(dato T) {
 	nodo := crearNodo(dato)
 	if lista.EstaVacia() {
 		lista.ultimo = nodo
-	} else {
-		nodo.siguiente = lista.primero
 	}
+	nodo.siguiente = lista.primero
 	lista.primero = nodo
 	lista.largo++
 }
@@ -99,11 +96,7 @@ func (lista *listaEnlazada[T]) Iterar(visitar func(T) bool) {
 //PRIMITIVAS ITERADOR
 
 func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] {
-	iterador := new(iterListaEnlazada[T])
-	iterador.anterior = nil
-	iterador.actual = lista.primero
-	iterador.lista = lista
-	return iterador
+	return &iterListaEnlazada[T]{lista, nil, lista.primero}
 }
 
 func (iterador *iterListaEnlazada[T]) VerActual() T {
@@ -147,7 +140,7 @@ func (iterador *iterListaEnlazada[T]) Borrar() T {
 		panic(PANICOITER)
 	}
 	elem := iterador.actual.dato
-	if iterador.lista.ultimo == iterador.actual {
+	if iterador.actual.siguiente == nil {
 		iterador.lista.ultimo = iterador.anterior
 	}
 	if iterador.anterior == nil {
