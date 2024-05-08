@@ -132,4 +132,9 @@ func main() {
 	if diccionario6.Obtener(67) == 8 {
 		fmt.Println("Ta todo bn")
 	}
+	diccionario6.Guardar(67, 49)
+	if diccionario6.Obtener(67) == 49 {
+		fmt.Println("Actualiza bn")
+	}
+
 }
