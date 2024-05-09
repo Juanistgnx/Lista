@@ -1,6 +1,8 @@
 package diccionario
 
-//TDAPila "tdas/pila"
+import (
+	TDAPila "tdas/pila"
+)
 
 const PANICO = "La clave no pertenece al diccionario"
 const PANICOITER = "El iterador termino de iterar"
@@ -16,8 +18,8 @@ type abb[K comparable, V any] struct {
 	cantidad int
 	cmp      funcCmp[K]
 }
-type iterAbb_test[K comparable, V any] struct { //A modo de prueba tomo esto,despues hay que ver como queda
-
+type iterAbb[K comparable, V any] struct { //A modo de prueba tomo esto,despues hay que ver como queda
+	datos TDAPila.Pila[*nodoAbb[K, V]]
 }
 
 type funcCmp[K comparable] func(K, K) int
@@ -94,36 +96,57 @@ func (abb *abb[K, V]) Cantidad() int {
 }
 
 func (abb *abb[K, V]) Iterar(f func(clave K, dato V) bool) {
-	iterar(abb.raiz, f)
+	continuar := true
+	iterar(abb.raiz, f, &continuar)
 }
 
 func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
-	return &iterAbb_test[K, V]{abb}
+	iterador := &iterAbb[K, V]{TDAPila.CrearPilaDinamica[*nodoAbb[K, V]]()}
+	continuar := true
+	iterar(abb.raiz, func(clave K, dato V) bool {
+		iterador.datos.Apilar(&nodoAbb[K, V]{nil, nil, clave, dato})
+		return true
+	}, &continuar)
+	iterador.datos = invertir_pilas(iterador.datos)
+	return iterador
 }
 
 func (abb *abb[K, V]) IterarRango(desde *K, hasta *K, visitar func(clave K, dato V) bool) {
-	//...
-
+	continuar := true
+	iterar_rango(abb.raiz, visitar, &continuar, abb.cmp, *desde, *hasta)
 }
 
 func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
-	return &iterAbb_test[K, V]{abb}
+	iterador := &iterAbb[K, V]{TDAPila.CrearPilaDinamica[*nodoAbb[K, V]]()}
+	continuar := true
+	iterar_rango(abb.raiz, func(clave K, dato V) bool {
+		iterador.datos.Apilar(&nodoAbb[K, V]{nil, nil, clave, dato})
+		return true
+	}, &continuar, abb.cmp, *desde, *hasta)
+	iterador.datos = invertir_pilas(iterador.datos)
+	return iterador
 }
 
-func (iter *iterAbb_test[K, V]) HaySiguiente() bool {
-	//A modo de prueba tomo esto
-	return true
+func (iter *iterAbb[K, V]) HaySiguiente() bool {
+	return !iter.datos.EstaVacia()
 }
 
-func (iter *iterAbb_test[K, V]) VerActual() (K, V) {
-	//A modo de prueba se toma esto
-	return iter.arbol.raiz.clave, iter.arbol.raiz.dato
+func (iter *iterAbb[K, V]) VerActual() (K, V) {
+	if !iter.HaySiguiente() {
+		panic(PANICOITER)
+	}
+	actual := iter.datos.VerTope()
+	return actual.clave, actual.dato
 }
 
-func (iter *iterAbb_test[K, V]) Siguiente() {
-	//A modo de prueba tomo esto
-	//...
+func (iter *iterAbb[K, V]) Siguiente() {
+	if !iter.HaySiguiente() {
+		panic(PANICOITER)
+	}
+	iter.datos.Desapilar()
 }
+
+// FUNCIONES AUXILIARES
 
 func buscar[K comparable, V any](raiz **nodoAbb[K, V], clave K, funcion_cmp func(K, K) int) **nodoAbb[K, V] { //Tuve que usar doble puntero para el nodo que recibe sino no me cambia a donde apunta mi cajita ,solamente me cambiaba la cajita a la que apuntaba con lo cual si esgaba en la raiz se rompia porqe apuntaba a oyrs caja que no esra la del abb
 	nodo := *raiz
@@ -136,12 +159,54 @@ func buscar[K comparable, V any](raiz **nodoAbb[K, V], clave K, funcion_cmp func
 	return buscar(&nodo.derecho, clave, funcion_cmp)
 	//EN teoria saque la fomra mas dificil,me devuelve la cajita del puntero (termino cajita es lo que usaba santisi creo)
 }
-func iterar[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) bool) { //Esta función está en preorder
-	if nodo == nil || !visitar(nodo.clave, nodo.dato) {
+func iterar[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) bool, flag *bool) {
+	//Esta función está en pre-order
+	/*if nodo == nil || !visitar(nodo.clave, nodo.dato) {
 		return
 	}
 	iterar(nodo.izquierdo, visitar)
-	iterar(nodo.derecho, visitar)
+	iterar(nodo.derecho, visitar)*/
+
+	//Esta función itera en in-order
+	if nodo != nil && *flag {
+		iterar(nodo.izquierdo, visitar, flag)
+		if *flag && !visitar(nodo.clave, nodo.dato) {
+			*flag = false
+			return
+		}
+		iterar(nodo.derecho, visitar, flag)
+	}
+}
+
+func iterar_rango[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) bool, flag *bool, cmp funcCmp[K], desde K, hasta K) {
+	if nodo != nil && *flag {
+		pertenencia_alta := cmp(nodo.clave, hasta)
+		pertenencia_baja := cmp(nodo.clave, desde)
+		if pertenencia_alta >= 0 {
+			iterar_rango(nodo.izquierdo, visitar, flag, cmp, desde, hasta)
+			if pertenencia_alta == 0 {
+				if *flag && !visitar(nodo.clave, nodo.dato) {
+					*flag = false
+					return
+				}
+			}
+		} else if pertenencia_baja <= 0 {
+			if pertenencia_baja == 0 {
+				if *flag && !visitar(nodo.clave, nodo.dato) {
+					*flag = false
+					return
+				}
+			}
+			iterar_rango(nodo.derecho, visitar, flag, cmp, desde, hasta)
+		} else {
+			iterar_rango(nodo.izquierdo, visitar, flag, cmp, desde, hasta)
+			if *flag && !visitar(nodo.clave, nodo.dato) {
+				*flag = false
+				return
+			}
+			iterar_rango(nodo.derecho, visitar, flag, cmp, desde, hasta)
+		}
+	}
 }
 
 func buscar_mas_grande[K comparable, V any](raiz **nodoAbb[K, V]) **nodoAbb[K, V] {
@@ -150,4 +215,12 @@ func buscar_mas_grande[K comparable, V any](raiz **nodoAbb[K, V]) **nodoAbb[K, V
 		return raiz
 	}
 	return buscar_mas_grande(&nodo.derecho)
+}
+
+func invertir_pilas[K comparable, V any](pila TDAPila.Pila[*nodoAbb[K, V]]) TDAPila.Pila[*nodoAbb[K, V]] {
+	pila_auxiliar := TDAPila.CrearPilaDinamica[*nodoAbb[K, V]]()
+	for !pila.EstaVacia() {
+		pila_auxiliar.Apilar(pila.Desapilar())
+	}
+	return pila_auxiliar
 }
