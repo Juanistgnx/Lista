@@ -15,16 +15,28 @@ type abb[K comparable, V any] struct {
 	cmp      funcCmp[K]
 }
 type iterAbb_test[K comparable, V any] struct { //A modo de prueba tomo esto,despues hay que ver como queda
-	arbol *abb[K, V]
+
 }
 
 type funcCmp[K comparable] func(K, K) int
 
+// debe devoler 0 si son iguales
+// debe devolver -1 si el primero es menor al segundo
+// debe devolver 1 si es primero es mayor al segundo
+
 func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdenado[K, V] {
-	return &abb[K, V]{nil, 0, funcion_cmp}
+	arbol := new(abb[K, V])
+	arbol.raiz = nil
+	arbol.cantidad = 0
+	arbol.cmp = funcion_cmp
+	return arbol
 }
+
 func crearnodo[K comparable, V any](clave K, dato V) *nodoAbb[K, V] {
-	return &nodoAbb[K, V]{nil, nil, clave, dato}
+	nodo := new(nodoAbb[K, V])
+	nodo.izquierdo, nodo.derecho = nil, nil
+	nodo.clave, nodo.dato = clave, dato
+	return nodo
 }
 
 func (abb *abb[K, V]) Guardar(clave K, dato V) {
@@ -69,7 +81,7 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 	} else {
 		//puedo buscar el mas derecho de la izquierda o el mas izquierdo de la derecha,pero seguro esta despues de este nodo
 		//decidi el mas derecho de izquierda
-		ubi_r := buscar_mas_grande_de_izqrd(&nodo.izquierdo) //Busco desde su nodo izquierdo por que no puede haber mas grandes que este nodo a borrar desde este lado.Por ende,puedo acortar la busqueda mas facil
+		ubi_r := buscar_mas_grande(&nodo.izquierdo) //Busco desde su nodo izquierdo por que no puede haber mas grandes que este nodo a borrar desde este lado.Por ende,puedo acortar la busqueda mas facil
 		remplazo := *ubi_r
 		//No importa si justo el hijo izquierdo era el mas grande,luego recupero esa posicion de izquierdp con la linea 77,por que ahora ,como actualize a donde apunta ubi_r ya no apunta a ese nodo sino a su hijo izquierdo
 		*ubi_r = remplazo.izquierdo
@@ -127,10 +139,9 @@ func buscar[K comparable, V any](raiz **nodoAbb[K, V], clave K, funcion_cmp func
 		return buscar(&nodo.izquierdo, clave, funcion_cmp)
 	}
 	return buscar(&nodo.derecho, clave, funcion_cmp)
-
 	//EN teoria saque la fomra mas dificil,me devuelve la cajita del puntero (termino cajita es lo que usaba santisi creo)
 }
-func iterar[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) bool) {
+func iterar[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) bool) { //Esta función está en preorder
 	if nodo == nil || !visitar(nodo.clave, nodo.dato) {
 		return
 	}
@@ -138,10 +149,10 @@ func iterar[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) bool) {
 	iterar(nodo.derecho, visitar)
 }
 
-func buscar_mas_grande_de_izqrd[K comparable, V any](raiz **nodoAbb[K, V]) **nodoAbb[K, V] {
+func buscar_mas_grande[K comparable, V any](raiz **nodoAbb[K, V]) **nodoAbb[K, V] {
 	nodo := *raiz
 	if nodo.derecho == nil { //si donde apunta la caja que tengo ,no tiene a donde apunta a su derecha,entoces a donde apunta mi caja es el mas grande
 		return raiz
 	}
-	return buscar_mas_grande_de_izqrd(&nodo.derecho)
+	return buscar_mas_grande(&nodo.derecho)
 }
