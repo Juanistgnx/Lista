@@ -1,5 +1,7 @@
 package diccionario
 
+//TDAPila "tdas/pila"
+
 const PANICO = "La clave no pertenece al diccionario"
 const PANICOITER = "El iterador termino de iterar"
 
@@ -25,18 +27,11 @@ type funcCmp[K comparable] func(K, K) int
 // debe devolver 1 si es primero es mayor al segundo
 
 func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdenado[K, V] {
-	arbol := new(abb[K, V])
-	arbol.raiz = nil
-	arbol.cantidad = 0
-	arbol.cmp = funcion_cmp
-	return arbol
+	return &abb[K, V]{nil, 0, funcion_cmp}
 }
 
 func crearnodo[K comparable, V any](clave K, dato V) *nodoAbb[K, V] {
-	nodo := new(nodoAbb[K, V])
-	nodo.izquierdo, nodo.derecho = nil, nil
-	nodo.clave, nodo.dato = clave, dato
-	return nodo
+	return &nodoAbb[K, V]{nil, nil, clave, dato}
 }
 
 func (abb *abb[K, V]) Guardar(clave K, dato V) {
