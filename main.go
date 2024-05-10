@@ -137,21 +137,13 @@ func main() {
 			fmt.Println("Actualiza bn")
 		}
 	*/
-	diccionario1 := TDADiccionario.CrearABB[int, int](func(a int, b int) int {
-		if a == b {
-			return 0
-		} else if a > b {
-			return 1
-		} else {
-			return -1
-		}
-	})
-	valores := []int{53, 30, 25, 20, 27, 40, 34, 36, 35, 37, 67, 60, 80, 70, 90, 81, 92, 100, 98}
+	diccionario1 := TDADiccionario.CrearABB[int, int](comparar_entero)
+	valores := []int{53, 30, 25, 20, 27, 40, 34, 36, 35, 37, 67, 60, 80, 70, 90, 81, 92, 100, 98, 99}
 	for _, value := range valores {
 		diccionario1.Guardar(value, value)
 	}
-	desde := 0
-	hasta := 99
+	desde := 29
+	hasta := 101
 	iterador := diccionario1.IteradorRango(&desde, &hasta)
 	for iterador.HaySiguiente() {
 		_, dato := iterador.VerActual()

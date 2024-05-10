@@ -18,8 +18,15 @@ type abb[K comparable, V any] struct {
 	cantidad int
 	cmp      funcCmp[K]
 }
-type iterAbb[K comparable, V any] struct { //A modo de prueba tomo esto,despues hay que ver como queda
+type iterAbb[K comparable, V any] struct {
 	datos TDAPila.Pila[*nodoAbb[K, V]]
+}
+
+type iterAbb_r[K comparable, V any] struct {
+	iterador_interno IterDiccionario[K, V]
+	cmp              funcCmp[K]
+	minimo           K
+	maximo           K
 }
 
 type funcCmp[K comparable] func(K, K) int
@@ -102,12 +109,7 @@ func (abb *abb[K, V]) Iterar(f func(clave K, dato V) bool) {
 
 func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
 	iterador := &iterAbb[K, V]{TDAPila.CrearPilaDinamica[*nodoAbb[K, V]]()}
-	continuar := true
-	iterar(abb.raiz, func(clave K, dato V) bool {
-		iterador.datos.Apilar(&nodoAbb[K, V]{nil, nil, clave, dato})
-		return true
-	}, &continuar)
-	iterador.datos = invertir_pilas(iterador.datos)
+	apilar_hijos_izq(abb.raiz, iterador.datos)
 	return iterador
 }
 
@@ -117,18 +119,30 @@ func (abb *abb[K, V]) IterarRango(desde *K, hasta *K, visitar func(clave K, dato
 }
 
 func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
-	iterador := &iterAbb[K, V]{TDAPila.CrearPilaDinamica[*nodoAbb[K, V]]()}
+
+	/*iterador := &iterAbb[K, V]{TDAPila.CrearPilaDinamica[*nodoAbb[K, V]]()}
 	continuar := true
 	iterar_rango(abb.raiz, func(clave K, dato V) bool {
 		iterador.datos.Apilar(&nodoAbb[K, V]{nil, nil, clave, dato})
 		return true
 	}, &continuar, abb.cmp, *desde, *hasta)
-	iterador.datos = invertir_pilas(iterador.datos)
-	return iterador
+	iterador.datos = invertir_pilas(iterador.datos)*/
+
+	iterador_rango := &iterAbb_r[K, V]{abb.Iterador(), abb.cmp, *desde, *hasta}
+	clave_nodo, _ := iterador_rango.iterador_interno.VerActual()
+	for abb.cmp(clave_nodo, iterador_rango.minimo) < 0 {
+		iterador_rango.iterador_interno.Siguiente()
+		clave_nodo, _ = iterador_rango.iterador_interno.VerActual()
+	}
+	return iterador_rango
 }
 
 func (iter *iterAbb[K, V]) HaySiguiente() bool {
 	return !iter.datos.EstaVacia()
+}
+
+func (iter *iterAbb_r[K, V]) HaySiguiente() bool {
+	return iter.iterador_interno.HaySiguiente()
 }
 
 func (iter *iterAbb[K, V]) VerActual() (K, V) {
@@ -139,11 +153,34 @@ func (iter *iterAbb[K, V]) VerActual() (K, V) {
 	return actual.clave, actual.dato
 }
 
+func (iter *iterAbb_r[K, V]) VerActual() (K, V) {
+	if !iter.HaySiguiente() {
+		panic(PANICOITER)
+	}
+	return iter.iterador_interno.VerActual()
+}
+
 func (iter *iterAbb[K, V]) Siguiente() {
 	if !iter.HaySiguiente() {
 		panic(PANICOITER)
 	}
-	iter.datos.Desapilar()
+	nodo := iter.datos.Desapilar()
+	apilar_hijos_izq(nodo.derecho, iter.datos)
+}
+
+func (iter *iterAbb_r[K, V]) Siguiente() {
+	if !iter.HaySiguiente() {
+		panic(PANICOITER)
+	}
+	iter.iterador_interno.Siguiente()
+	if iter.HaySiguiente() {
+		clave_actual, _ := iter.iterador_interno.VerActual()
+		if iter.cmp(clave_actual, iter.maximo) > 0 {
+			for iter.iterador_interno.HaySiguiente() {
+				iter.iterador_interno.Siguiente()
+			}
+		}
+	}
 }
 
 // FUNCIONES AUXILIARES
@@ -160,14 +197,6 @@ func buscar[K comparable, V any](raiz **nodoAbb[K, V], clave K, funcion_cmp func
 	//EN teoria saque la fomra mas dificil,me devuelve la cajita del puntero (termino cajita es lo que usaba santisi creo)
 }
 func iterar[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) bool, flag *bool) {
-	//Esta función está en pre-order
-	/*if nodo == nil || !visitar(nodo.clave, nodo.dato) {
-		return
-	}
-	iterar(nodo.izquierdo, visitar)
-	iterar(nodo.derecho, visitar)*/
-
-	//Esta función itera en in-order
 	if nodo != nil && *flag {
 		iterar(nodo.izquierdo, visitar, flag)
 		if *flag && !visitar(nodo.clave, nodo.dato) {
@@ -179,7 +208,9 @@ func iterar[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) bool, f
 }
 
 func iterar_rango[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) bool, flag *bool, cmp funcCmp[K], desde K, hasta K) {
-	if nodo != nil && *flag {
+
+	//Esta función es horrible pero se evita el buscar por ramas en las cuales SE SABE están fuera de rango
+	/*if nodo != nil && *flag {
 		pertenencia_alta := cmp(nodo.clave, hasta)
 		pertenencia_baja := cmp(nodo.clave, desde)
 		if pertenencia_alta >= 0 {
@@ -207,6 +238,17 @@ func iterar_rango[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) b
 			iterar_rango(nodo.derecho, visitar, flag, cmp, desde, hasta)
 		}
 	}
+	*/
+
+	//Esta función es bonita, pero busca en todo el árbol y solo aplica visitar en los nodos que están en rango
+	if nodo != nil && *flag {
+		iterar_rango(nodo.izquierdo, visitar, flag, cmp, desde, hasta)
+		if *flag && cmp(nodo.clave, hasta) <= 0 && cmp(nodo.clave, desde) >= 0 && !visitar(nodo.clave, nodo.dato) {
+			*flag = false
+			return
+		}
+		iterar_rango(nodo.derecho, visitar, flag, cmp, desde, hasta)
+	}
 }
 
 func buscar_mas_grande[K comparable, V any](raiz **nodoAbb[K, V]) **nodoAbb[K, V] {
@@ -217,10 +259,10 @@ func buscar_mas_grande[K comparable, V any](raiz **nodoAbb[K, V]) **nodoAbb[K, V
 	return buscar_mas_grande(&nodo.derecho)
 }
 
-func invertir_pilas[K comparable, V any](pila TDAPila.Pila[*nodoAbb[K, V]]) TDAPila.Pila[*nodoAbb[K, V]] {
-	pila_auxiliar := TDAPila.CrearPilaDinamica[*nodoAbb[K, V]]()
-	for !pila.EstaVacia() {
-		pila_auxiliar.Apilar(pila.Desapilar())
+func apilar_hijos_izq[K comparable, V any](raiz *nodoAbb[K, V], pila TDAPila.Pila[*nodoAbb[K, V]]) {
+	if raiz == nil {
+		return
 	}
-	return pila_auxiliar
+	pila.Apilar(raiz)
+	apilar_hijos_izq(raiz.izquierdo, pila)
 }

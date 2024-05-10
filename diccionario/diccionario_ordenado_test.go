@@ -36,3 +36,12 @@ func TestDiccionarioGuardar(t *testing.T) {
 	require.Equal(t, 10, diccionario.Obtener("hola"), "El diccionario no deberia perder el dato asociado a la clave ingresada")
 
 }
+
+func TestDiccionarioVacio(t *testing.T) {
+	t.Log("Comprueba que Diccionario vacio no tiene claves")
+	dic := TDADiccionario.CrearABB[string, string](strings.Compare)
+	require.EqualValues(t, 0, dic.Cantidad())
+	require.False(t, dic.Pertenece("A"))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Obtener("A") })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Borrar("A") })
+}
