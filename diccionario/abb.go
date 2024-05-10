@@ -48,10 +48,10 @@ func (abb *abb[K, V]) Guardar(clave K, dato V) {
 	nodo := *ubi
 	if nodo == nil {
 		nodo = crearnodo(clave, dato)
+		abb.cantidad++
 	} else {
 		nodo.dato = dato
 	}
-	abb.cantidad++
 	*ubi = nodo
 }
 
@@ -130,9 +130,11 @@ func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 
 	iterador_rango := &iterAbb_r[K, V]{abb.Iterador(), abb.cmp, *desde, *hasta}
 	clave_nodo, _ := iterador_rango.iterador_interno.VerActual()
-	for abb.cmp(clave_nodo, iterador_rango.minimo) < 0 {
+	for (abb.cmp(clave_nodo, iterador_rango.minimo) < 0 || abb.cmp(clave_nodo, iterador_rango.maximo) > 0) && iterador_rango.iterador_interno.HaySiguiente() {
 		iterador_rango.iterador_interno.Siguiente()
-		clave_nodo, _ = iterador_rango.iterador_interno.VerActual()
+		if iterador_rango.iterador_interno.HaySiguiente() {
+			clave_nodo, _ = iterador_rango.iterador_interno.VerActual()
+		}
 	}
 	return iterador_rango
 }

@@ -142,12 +142,10 @@ func main() {
 	for _, value := range valores {
 		diccionario1.Guardar(value, value)
 	}
-	desde := 29
-	hasta := 101
-	iterador := diccionario1.IteradorRango(&desde, &hasta)
-	for iterador.HaySiguiente() {
-		_, dato := iterador.VerActual()
+	desde := 0
+	hasta := 58
+	diccionario1.IterarRango(&desde, &hasta, func(clave int, dato int) bool {
 		fmt.Printf("%v\n", dato)
-		iterador.Siguiente()
-	}
+		return true
+	})
 }
