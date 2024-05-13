@@ -26,27 +26,7 @@ var int_compare = func(n1, n2 int) int {
 
 // No dar bola,solo es para que me queden los import con el go mod
 /*func TestDiccionarioGuardar(t *testing.T) {
-	t.Log("Valido que el diccionario se comporte correctamente cuando no tiene elementos y guarde bien")
-	diccionario := TDADiccionario.CrearABB[string, int](strings.Compare)
 
-	require.Equal(t, 0, diccionario.Cantidad(), "No se le ingreso ningun elemento,por ende su cantidad deberia ser 0")
-	require.PanicsWithValue(t, PANICO, func() { diccionario.Obtener("hola") }, "El diccioanario esta vacio,por ende no deberia registar esta o ninguna clave")
-	require.PanicsWithValue(t, PANICO, func() { diccionario.Borrar("hola") }, "El diccionario esta vacio,por ende no deberia registar esta o ninguna clave")
-
-	diccionario.Guardar("hola", 10)
-
-	require.Equal(t, 1, diccionario.Cantidad(), "El diccionario deberia poder actualizar su cantidad cuando le ingreso una clave")
-	require.True(t, diccionario.Pertenece("hola"), "El diccionario deberia registrar la clave recièn ingresada")
-	require.Equal(t, 10, diccionario.Obtener("hola"), "El diccionario deberia poder devolver el dato asociado a su clave")
-
-	diccionario.Guardar("mundo", 20)
-
-	require.Equal(t, 2, diccionario.Cantidad(), "El diccionario deberia poder actualizar su cantidad cuando le ingreso una nueva clave")
-	require.True(t, diccionario.Pertenece("mundo"), "El diccionario deberia registrar la clave recièn ingresada")
-	require.Equal(t, 20, diccionario.Obtener("mundo"), "El diccionario deberia poder devolver el dato asociado a su clave")
-
-	require.True(t, diccionario.Pertenece("hola"), "El diccionario no deberia perder la primer clave ingresada")
-	require.Equal(t, 10, diccionario.Obtener("hola"), "El diccionario no deberia perder el dato asociado a la clave ingresada")
 
 }*/
 
@@ -112,6 +92,28 @@ func TestDiccionarioGuardar(t *testing.T) {
 	require.EqualValues(t, valores[0], dic.Obtener(claves[0]))
 	require.EqualValues(t, valores[1], dic.Obtener(claves[1]))
 	require.EqualValues(t, valores[2], dic.Obtener(claves[2]))
+
+	t.Log("Valido que el diccionario se comporte correctamente cuando no tiene elementos y guarde bien")
+	diccionario := TDADiccionario.CrearABB[string, int](strings.Compare)
+
+	require.Equal(t, 0, diccionario.Cantidad(), "No se le ingreso ningun elemento,por ende su cantidad deberia ser 0")
+	require.PanicsWithValue(t, PANICO, func() { diccionario.Obtener("hola") }, "El diccioanario esta vacio,por ende no deberia registar esta o ninguna clave")
+	require.PanicsWithValue(t, PANICO, func() { diccionario.Borrar("hola") }, "El diccionario esta vacio,por ende no deberia registar esta o ninguna clave")
+
+	diccionario.Guardar("hola", 10)
+
+	require.Equal(t, 1, diccionario.Cantidad(), "El diccionario deberia poder actualizar su cantidad cuando le ingreso una clave")
+	require.True(t, diccionario.Pertenece("hola"), "El diccionario deberia registrar la clave recièn ingresada")
+	require.Equal(t, 10, diccionario.Obtener("hola"), "El diccionario deberia poder devolver el dato asociado a su clave")
+
+	diccionario.Guardar("mundo", 20)
+
+	require.Equal(t, 2, diccionario.Cantidad(), "El diccionario deberia poder actualizar su cantidad cuando le ingreso una nueva clave")
+	require.True(t, diccionario.Pertenece("mundo"), "El diccionario deberia registrar la clave recièn ingresada")
+	require.Equal(t, 20, diccionario.Obtener("mundo"), "El diccionario deberia poder devolver el dato asociado a su clave")
+
+	require.True(t, diccionario.Pertenece("hola"), "El diccionario no deberia perder la primer clave ingresada")
+	require.Equal(t, 10, diccionario.Obtener("hola"), "El diccionario no deberia perder el dato asociado a la clave ingresada")
 }
 
 func TestReemplazoDato(t *testing.T) {
@@ -334,9 +336,9 @@ func TestIteradorInternoValores(t *testing.T) {
 	require.EqualValues(t, 720, factorial)
 }
 
-func ejecutarPruebaVolumen(b *testing.B, n int) {
+func TestVolumen(b *testing.T) {
 	dic := TDADiccionario.CrearABB[string, int](strings.Compare)
-
+	n := 50
 	claves := make([]string, n)
 	valores := make([]int, n)
 
@@ -379,20 +381,6 @@ func ejecutarPruebaVolumen(b *testing.B, n int) {
 
 	require.True(b, ok, "Borrar muchos elementos no funciona correctamente")
 	require.EqualValues(b, 0, dic.Cantidad())
-}
-
-func BenchmarkDiccionario(b *testing.B) {
-	b.Log("Prueba de stress del Diccionario. Prueba guardando distinta cantidad de elementos (muy grandes), " +
-		"ejecutando muchas veces las pruebas para generar un benchmark. Valida que la cantidad " +
-		"sea la adecuada. Luego validamos que podemos obtener y ver si pertenece cada una de las claves geeneradas, " +
-		"y que luego podemos borrar sin problemas")
-	for _, n := range TAMS_VOLUMEN {
-		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				ejecutarPruebaVolumen(b, n)
-			}
-		})
-	}
 }
 
 func TestIterarDiccionarioVacio(t *testing.T) {
@@ -472,9 +460,9 @@ func TestIteradorNoLlegaAlFinal(t *testing.T) {
 	require.NotEqualValues(t, -1, buscar(tercero, claves))
 }
 
-func ejecutarPruebasVolumenIterador(b *testing.B, n int) {
+func TestPruebasVolumenIterador(b *testing.T) {
 	dic := TDADiccionario.CrearABB[string, *int](strings.Compare)
-
+	n := 20
 	claves := make([]string, n)
 	valores := make([]int, n)
 
@@ -525,19 +513,6 @@ func ejecutarPruebasVolumenIterador(b *testing.B, n int) {
 		}
 	}
 	require.True(b, ok, "No se cambiaron todos los elementos")
-}
-
-func BenchmarkIterador(b *testing.B) {
-	b.Log("Prueba de stress del Iterador del Diccionario. Prueba guardando distinta cantidad de elementos " +
-		"(muy grandes) b.N elementos, iterarlos todos sin problemas. Se ejecuta cada prueba b.N veces para generar " +
-		"un benchmark")
-	for _, n := range TAMS_VOLUMEN {
-		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				ejecutarPruebasVolumenIterador(b, n)
-			}
-		})
-	}
 }
 
 func TestVolumenIteradorCorte(t *testing.T) {
