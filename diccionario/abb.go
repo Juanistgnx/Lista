@@ -127,8 +127,21 @@ func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 		return true
 	}, &continuar, abb.cmp, *desde, *hasta)
 	iterador.datos = invertir_pilas(iterador.datos)*/
-
-	iterador_rango := &iterAbb_r[K, V]{abb.Iterador(), abb.cmp, *desde, *hasta}
+	var inicio K
+	var fin K
+	if desde == nil {
+		lugar := buscar_mas_pequeno(&(abb.raiz))
+		inicio = (*lugar).clave
+	} else {
+		inicio = *desde
+	}
+	if hasta == nil {
+		lugar := buscar_mas_grande(&(abb.raiz))
+		fin = (*lugar).clave
+	} else {
+		fin = *hasta
+	}
+	iterador_rango := &iterAbb_r[K, V]{abb.Iterador(), abb.cmp, inicio, fin}
 	if iterador_rango.iterador_interno.HaySiguiente() {
 		clave_nodo, _ := iterador_rango.iterador_interno.VerActual()
 		for (abb.cmp(clave_nodo, iterador_rango.minimo) < 0 || abb.cmp(clave_nodo, iterador_rango.maximo) > 0) && iterador_rango.iterador_interno.HaySiguiente() {
@@ -261,6 +274,14 @@ func buscar_mas_grande[K comparable, V any](raiz **nodoAbb[K, V]) **nodoAbb[K, V
 		return raiz
 	}
 	return buscar_mas_grande(&nodo.derecho)
+}
+
+func buscar_mas_pequeno[K comparable, V any](raiz **nodoAbb[K, V]) **nodoAbb[K, V] {
+	nodo := *raiz
+	if nodo.izquierdo == nil {
+		return raiz
+	}
+	return buscar_mas_grande(&nodo.izquierdo)
 }
 
 func apilar_hijos_izq[K comparable, V any](raiz *nodoAbb[K, V], pila TDAPila.Pila[*nodoAbb[K, V]]) {
