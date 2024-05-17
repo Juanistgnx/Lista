@@ -44,7 +44,7 @@ func crearnodo[K comparable, V any](clave K, dato V) *nodoAbb[K, V] {
 }
 
 func (abb *abb[K, V]) Guardar(clave K, dato V) {
-	ubi := buscar(&abb.raiz, clave, abb.cmp)
+	ubi := buscar_nodo(&abb.raiz, clave, abb.cmp)
 	nodo := *ubi
 	if nodo == nil {
 		nodo = crearnodo(clave, dato)
@@ -56,12 +56,12 @@ func (abb *abb[K, V]) Guardar(clave K, dato V) {
 }
 
 func (abb *abb[K, V]) Pertenece(clave K) bool {
-	ubi := buscar(&abb.raiz, clave, abb.cmp)
+	ubi := buscar_nodo(&abb.raiz, clave, abb.cmp)
 	return *ubi != nil
 }
 
 func (abb *abb[K, V]) Obtener(clave K) V {
-	ubi := buscar(&abb.raiz, clave, abb.cmp)
+	ubi := buscar_nodo(&abb.raiz, clave, abb.cmp)
 	nodo := *ubi
 	if nodo == nil {
 		panic(PANICO)
@@ -70,7 +70,7 @@ func (abb *abb[K, V]) Obtener(clave K) V {
 }
 
 func (abb *abb[K, V]) Borrar(clave K) V {
-	ubi := buscar(&abb.raiz, clave, abb.cmp)
+	ubi := buscar_nodo(&abb.raiz, clave, abb.cmp)
 	if *ubi == nil {
 		panic(PANICO)
 	}
@@ -83,9 +83,9 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 	} else if nodo.derecho != nil && nodo.izquierdo == nil {
 		*ubi = nodo.derecho
 	} else {
-		//puedo buscar el mas derecho de la izquierda o el mas izquierdo de la derecha,pero seguro esta despues de este nodo
+		//puedo buscar_nodo el mas derecho de la izquierda o el mas izquierdo de la derecha,pero seguro esta despues de este nodo
 		//decidi el mas derecho de izquierda
-		ubi_r := buscar_mas_grande(&nodo.izquierdo) //Busco desde su nodo izquierdo por que no puede haber mas grandes que este nodo a borrar desde este lado.Por ende,puedo acortar la busqueda mas facil
+		ubi_r := encontrar_mas_grande(&nodo.izquierdo) //Busco desde su nodo izquierdo por que no puede haber mas grandes que este nodo a borrar desde este lado.Por ende,puedo acortar la busqueda mas facil
 		remplazo := *ubi_r
 		//No importa si justo el hijo izquierdo era el mas grande,luego recupero esa posicion de izquierdp con la linea 77,por que ahora ,como actualize a donde apunta ubi_r ya no apunta a ese nodo sino a su hijo izquierdo
 		*ubi_r = remplazo.izquierdo
@@ -202,15 +202,15 @@ func (iter *iterAbb_r[K, V]) Siguiente() {
 
 // FUNCIONES AUXILIARES
 
-func buscar[K comparable, V any](raiz **nodoAbb[K, V], clave K, funcion_cmp func(K, K) int) **nodoAbb[K, V] { //Tuve que usar doble puntero para el nodo que recibe sino no me cambia a donde apunta mi cajita ,solamente me cambiaba la cajita a la que apuntaba con lo cual si esgaba en la raiz se rompia porqe apuntaba a oyrs caja que no esra la del abb
+func buscar_nodo[K comparable, V any](raiz **nodoAbb[K, V], clave K, funcion_cmp func(K, K) int) **nodoAbb[K, V] { //Tuve que usar doble puntero para el nodo que recibe sino no me cambia a donde apunta mi cajita ,solamente me cambiaba la cajita a la que apuntaba con lo cual si esgaba en la raiz se rompia porqe apuntaba a oyrs caja que no esra la del abb
 	nodo := *raiz
 	if nodo == nil || funcion_cmp(nodo.clave, clave) == 0 {
 		return raiz
 	}
 	if funcion_cmp(nodo.clave, clave) > 0 {
-		return buscar(&nodo.izquierdo, clave, funcion_cmp)
+		return buscar_nodo(&nodo.izquierdo, clave, funcion_cmp)
 	}
-	return buscar(&nodo.derecho, clave, funcion_cmp)
+	return buscar_nodo(&nodo.derecho, clave, funcion_cmp)
 	//EN teoria saque la fomra mas dificil,me devuelve la cajita del puntero (termino cajita es lo que usaba santisi creo)
 }
 func iterar[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) bool, flag *bool) {
@@ -226,7 +226,7 @@ func iterar[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) bool, f
 
 func iterar_rango[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) bool, flag *bool, cmp funcCmp[K], desde K, hasta K) {
 
-	//Esta función es horrible pero se evita el buscar por ramas en las cuales SE SABE están fuera de rango
+	//Esta función es horrible pero se evita el buscar_nodo por ramas en las cuales SE SABE están fuera de rango
 	/*if nodo != nil && *flag {
 		pertenencia_alta := cmp(nodo.clave, hasta)
 		pertenencia_baja := cmp(nodo.clave, desde)
@@ -268,12 +268,12 @@ func iterar_rango[K comparable, V any](nodo *nodoAbb[K, V], visitar func(K, V) b
 	}
 }
 
-func buscar_mas_grande[K comparable, V any](raiz **nodoAbb[K, V]) **nodoAbb[K, V] {
+func encontrar_mas_grande[K comparable, V any](raiz **nodoAbb[K, V]) **nodoAbb[K, V] {
 	nodo := *raiz
 	if nodo.derecho == nil { //si donde apunta la caja que tengo ,no tiene a donde apunta a su derecha,entoces a donde apunta mi caja es el mas grande
 		return raiz
 	}
-	return buscar_mas_grande(&nodo.derecho)
+	return encontrar_mas_grande(&nodo.derecho)
 }
 
 func buscar_mas_pequeno[K comparable, V any](raiz **nodoAbb[K, V]) **nodoAbb[K, V] {
